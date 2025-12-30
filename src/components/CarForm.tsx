@@ -42,7 +42,7 @@ export function CarForm({ car, onClose }: CarFormProps) {
     return Number(converted) || 0;
   };
 
-  // رفع الصور من الملفات المختارة
+  // رفع الصور
   const uploadImages = async (): Promise<string[]> => {
     if (selectedFiles.length === 0) return imageUrls;
 
@@ -50,8 +50,8 @@ export function CarForm({ car, onClose }: CarFormProps) {
     const uploadedUrls = [...imageUrls];
 
     for (const file of selectedFiles) {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const fileExt = file.name.split('.').pop()?.toLowerCase();
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
       const { error, data } = await supabase.storage
         .from('cars') // اسم البوكيت في Supabase Storage
         .upload(fileName, file);
@@ -96,7 +96,7 @@ export function CarForm({ car, onClose }: CarFormProps) {
     if (!error) {
       onClose();
     } else {
-      alert('حدث خطأ: ' + error.message);
+      alert('خطأ في الحفظ: ' + error.message);
     }
   };
 
@@ -135,11 +135,39 @@ export function CarForm({ car, onClose }: CarFormProps) {
             </button>
           </div>
 
-          {/* الحقول نفسها (الماركة، الموديل، إلخ) - نفس الكود اللي عندك */}
+          {/* Basic Info Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            <Input label="الماركة *" value={formData.brand} onChange={(v) => setFormData({ ...formData, brand: v })} placeholder="مثل: Mercedes, Toyota, BMW" />
+            <Input label="الموديل *" value={formData.model} onChange={(v) => setFormData({ ...formData, model: v })} placeholder="مثل: S-Class, Camry, X5" />
+            <Input label="السنة *" value={formData.year} onChange={(v) => setFormData({ ...formData, year: v })} placeholder="مثل: ٢٠٢٤ أو 2024" isNumeric />
+            <Input label="السعر (USD) *" value={formData.price} onChange={(v) => setFormData({ ...formData, price: v })} placeholder="مثل: ٥٠٠٠٠ أو 50000" isNumeric />
+            <Input label="المسافة المقطوعة (كم)" value={formData.mileage} onChange={(v) => setFormData({ ...formData, mileage: v })} placeholder="مثل: ٤٥٠٠٠ أو 45000" isNumeric />
+            <Select label="الحالة" value={formData.condition} onChange={(v) => setFormData({ ...formData, condition: v })} options={['جديدة', 'مستعملة']} />
+            <Input label="نوع المحرك" value={formData.engine_type} onChange={(v) => setFormData({ ...formData, engine_type: v })} placeholder="مثل: V6, V8, Turbo" />
+            <Input label="سعة المحرك" value={formData.engine_size} onChange={(v) => setFormData({ ...formData, engine_size: v })} placeholder="مثل: 3.0L أو 2000cc" />
+            <Select label="ناقل الحركة" value={formData.transmission} onChange={(v) => setFormData({ ...formData, transmission: v })} options={['أوتوماتيك', 'يدوي']} />
+            <Select label="نوع الوقود" value={formData.fuel_type} onChange={(v) => setFormData({ ...formData, fuel_type: v })} options={['بنزين', 'ديزل', 'هايبرد', 'كهربائي']} />
+            <Select label="نوع الدفع" value={formData.drive_type} onChange={(v) => setFormData({ ...formData, drive_type: v })} options={['دفع أمامي', 'دفع خلفي', 'دفع رباعي']} />
+            <Input label="اللون الخارجي" value={formData.exterior_color} onChange={(v) => setFormData({ ...formData, exterior_color: v })} placeholder="مثل: أسود, أبيض, فضي" />
+            <Input label="اللون الداخلي" value={formData.interior_color} onChange={(v) => setFormData({ ...formData, interior_color: v })} placeholder="مثل: جلد بيج, أسود" />
+            <Select label="حالة البيع" value={formData.status} onChange={(v) => setFormData({ ...formData, status: v })} options={['متوفرة', 'محجوزة', 'مباعة']} />
+          </div>
 
-          {/* قسم الصور - Drag & Drop */}
+          {/* Description */}
           <div>
-            <label className="block text-gray-300 mb-2 font-bold text-lg">الصور</label>
+            <label className="block text-gray-300 mb-2 font-bold text-lg">الوصف</label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              rows={6}
+              placeholder="اكتب وصفًا مفصلًا عن السيارة، مميزاتها، حالتها، أي إضافات..."
+              className="w-full bg-gray-800 text-white border border-gray-700 rounded-lg px-4 py-3 resize-none focus:border-red-600 transition text-base"
+            />
+          </div>
+
+          {/* Images - Drag & Drop */}
+          <div>
+            <label className="block text-gray-300 mb-4 font-bold text-lg">الصور</label>
             <div
               onDrop={handleDrop}
               onDragOver={handleDragOver}
@@ -156,22 +184,22 @@ export function CarForm({ car, onClose }: CarFormProps) {
                 className="hidden"
                 id="file-input"
               />
-              <label htmlFor="file-input" className="mt-4 inline-block bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg cursor-pointer transition">
+              <label htmlFor="file-input" className="mt-6 inline-block bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-lg cursor-pointer transition font-bold">
                 اختيار من الجهاز
               </label>
             </div>
 
-            {/* عرض الصور المختارة (قبل الرفع) */}
+            {/* معاينة الصور المختارة */}
             {selectedFiles.length > 0 && (
               <div className="mt-6">
-                <p className="text-yellow-400 mb-3">الصور المختارة ({selectedFiles.length}) - جاهزة للرفع:</p>
-                <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-4">
+                <p className="text-yellow-400 mb-4 text-lg">الصور الجديدة المختارة ({selectedFiles.length}):</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                   {selectedFiles.map((file, i) => (
                     <div key={i} className="relative">
                       <img
                         src={URL.createObjectURL(file)}
                         alt={`معاينة ${i + 1}`}
-                        className="w-full h-32 object-cover rounded-lg border border-gray-700"
+                        className="w-full h-40 object-cover rounded-lg border border-gray-700"
                       />
                     </div>
                   ))}
@@ -179,10 +207,10 @@ export function CarForm({ car, onClose }: CarFormProps) {
               </div>
             )}
 
-            {/* عرض الصور الموجودة مسبقًا (من السيارة القديمة) */}
+            {/* الصور الحالية */}
             {imageUrls.length > 0 && (
               <div className="mt-6">
-                <p className="text-gray-400 mb-3">الصور الحالية:</p>
+                <p className="text-gray-400 mb-4 text-lg">الصور الحالية:</p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                   {imageUrls.map((url, i) => (
                     <div key={i} className="relative group">
@@ -200,15 +228,103 @@ export function CarForm({ car, onClose }: CarFormProps) {
               </div>
             )}
 
-            {uploading && <p className="text-yellow-400 text-center mt-4">جاري رفع الصور...</p>}
+            {uploading && <p className="text-yellow-400 text-center mt-6 text-lg">جاري رفع الصور...</p>}
           </div>
 
-          {/* باقي الأقسام (Flags, Actions) نفس اللي عندك */}
-          {/* ... */}
+          {/* Flags */}
+          <div className="flex flex-col sm:flex-row gap-6 sm:gap-8">
+            <Checkbox label="سيارة مميزة" checked={formData.is_featured} onChange={(v) => setFormData({ ...formData, is_featured: v })} />
+            <Checkbox label="إظهار للعملاء" checked={formData.is_visible} onChange={(v) => setFormData({ ...formData, is_visible: v })} />
+          </div>
+
+          {/* Actions */}
+          <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-800">
+            <button
+              type="submit"
+              disabled={loading || uploading}
+              className="w-full sm:flex-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-700 py-4 rounded-lg font-bold text-white text-lg transition"
+            >
+              {loading || uploading ? 'جاري الحفظ...' : car ? 'حفظ التعديلات' : 'إضافة السيارة'}
+            </button>
+            <button type="button" onClick={onClose} className="w-full sm:w-auto bg-gray-800 hover:bg-gray-700 px-8 py-4 rounded-lg text-white font-bold text-lg transition">
+              إلغاء
+            </button>
+          </div>
         </form>
       </div>
     </div>
   );
 }
 
-/* المكونات الصغيرة (Input, Select, Checkbox) نفس اللي عندك */
+/* المكونات الصغيرة - نفس اللي عندك مع تحسين بسيط */
+interface InputProps {
+  label: string;
+  value: string | number;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  isNumeric?: boolean;
+}
+
+function Input({ label, value, onChange, placeholder, isNumeric = false }: InputProps) {
+  return (
+    <div>
+      <label className="block text-gray-300 mb-2 font-bold text-lg">{label}</label>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        required={label.includes('*')}
+        placeholder={placeholder}
+        inputMode={isNumeric ? 'numeric' : 'text'}
+        pattern={isNumeric ? '[0-9٠١٢٣٤٥٦٧٨٩]*' : undefined}
+        dir="rtl"
+        className="w-full bg-gray-800 text-white border border-gray-700 rounded-lg px-4 py-3 focus:border-red-600 transition text-base"
+      />
+    </div>
+  );
+}
+
+interface SelectProps {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: string[];
+}
+
+function Select({ label, value, onChange, options }: SelectProps) {
+  return (
+    <div>
+      <label className="block text-gray-300 mb-2 font-bold text-lg">{label}</label>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full bg-gray-800 text-white border border-gray-700 rounded-lg px-4 py-3 focus:border-red-600 transition text-base"
+      >
+        <option value="">اختر...</option>
+        {options.map((o) => (
+          <option key={o} value={o}>{o}</option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+interface CheckboxProps {
+  label: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}
+
+function Checkbox({ label, checked, onChange }: CheckboxProps) {
+  return (
+    <label className="flex items-center gap-4 cursor-pointer select-none text-lg">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="w-6 h-6 text-red-600 bg-gray-800 border-gray-700 rounded focus:ring-red-600"
+      />
+      <span className="text-gray-300 font-bold">{label}</span>
+    </label>
+  );
+}
