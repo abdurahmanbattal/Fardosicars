@@ -42,7 +42,6 @@ export function CarForm({ car, onClose }: CarFormProps) {
     return Number(converted) || 0;
   };
 
-  // رفع الصور
   const uploadImages = async (): Promise<string[]> => {
     if (selectedFiles.length === 0) return imageUrls;
 
@@ -53,7 +52,7 @@ export function CarForm({ car, onClose }: CarFormProps) {
       const fileExt = file.name.split('.').pop()?.toLowerCase();
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
       const { error, data } = await supabase.storage
-        .from('cars') // اسم البوكيت في Supabase Storage
+        .from('cars')
         .upload(fileName, file);
 
       if (error) {
@@ -124,18 +123,22 @@ export function CarForm({ car, onClose }: CarFormProps) {
   return (
     <div className="fixed inset-0 bg-black/80 z-50 flex items-start justify-center p-4 overflow-y-auto">
       <div className="bg-gradient-to-br from-gray-900 to-black border border-red-900/30 rounded-xl w-full max-w-4xl my-8 max-h-screen overflow-y-auto">
-        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-6 lg:space-y-8">
-          {/* Header */}
-          <div className="flex items-center justify-between border-b border-gray-800 pb-4">
-            <h2 className="text-2xl sm:text-3xl font-bold text-white">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-6">
+          {/* Header - محسن للموبايل */}
+          <div className="flex items-center justify-between border-b border-gray-800 pb-4 sticky top-0 bg-gray-900/95 backdrop-blur-sm z-10">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white truncate pr-4">
               {car ? 'تعديل السيارة' : 'إضافة سيارة جديدة'}
             </h2>
-            <button type="button" onClick={onClose} className="text-gray-400 hover:text-red-500 transition">
-              <X size={28} />
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-gray-400 hover:text-red-500 transition flex-shrink-0"
+            >
+              <X size={32} />
             </button>
           </div>
 
-          {/* Basic Info Grid */}
+          {/* Basic Info Grid - عمود واحد على الموبايل */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <Input label="الماركة *" value={formData.brand} onChange={(v) => setFormData({ ...formData, brand: v })} placeholder="مثل: Mercedes, Toyota, BMW" />
             <Input label="الموديل *" value={formData.model} onChange={(v) => setFormData({ ...formData, model: v })} placeholder="مثل: S-Class, Camry, X5" />
@@ -171,10 +174,10 @@ export function CarForm({ car, onClose }: CarFormProps) {
             <div
               onDrop={handleDrop}
               onDragOver={handleDragOver}
-              className="border-2 border-dashed border-gray-600 rounded-xl p-8 text-center cursor-pointer hover:border-red-600 transition bg-gray-800/50"
+              className="border-2 border-dashed border-gray-600 rounded-xl p-6 sm:p-8 text-center cursor-pointer hover:border-red-600 transition bg-gray-800/50"
             >
               <Upload className="mx-auto mb-4 text-gray-400" size={48} />
-              <p className="text-xl text-gray-300 mb-2">اسحب الصور هنا أو اضغط للاختيار</p>
+              <p className="text-lg sm:text-xl text-gray-300 mb-2">اسحب الصور هنا أو اضغط للاختيار</p>
               <p className="text-sm text-gray-500">يدعم عدة صور في وقت واحد</p>
               <input
                 type="file"
@@ -184,7 +187,7 @@ export function CarForm({ car, onClose }: CarFormProps) {
                 className="hidden"
                 id="file-input"
               />
-              <label htmlFor="file-input" className="mt-6 inline-block bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-lg cursor-pointer transition font-bold">
+              <label htmlFor="file-input" className="mt-6 inline-block bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-lg cursor-pointer transition font-bold text-base">
                 اختيار من الجهاز
               </label>
             </div>
@@ -231,22 +234,22 @@ export function CarForm({ car, onClose }: CarFormProps) {
             {uploading && <p className="text-yellow-400 text-center mt-6 text-lg">جاري رفع الصور...</p>}
           </div>
 
-          {/* Flags */}
-          <div className="flex flex-col sm:flex-row gap-6 sm:gap-8">
+          {/* Flags - مرتبة على الموبايل */}
+          <div className="flex flex-col gap-6 sm:flex-row sm:gap-8">
             <Checkbox label="سيارة مميزة" checked={formData.is_featured} onChange={(v) => setFormData({ ...formData, is_featured: v })} />
             <Checkbox label="إظهار للعملاء" checked={formData.is_visible} onChange={(v) => setFormData({ ...formData, is_visible: v })} />
           </div>
 
-          {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-800">
+          {/* Actions - أزرار كبيرة ومريحة على الموبايل */}
+          <div className="flex flex-col gap-4 pt-6 border-t border-gray-800">
             <button
               type="submit"
               disabled={loading || uploading}
-              className="w-full sm:flex-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-700 py-4 rounded-lg font-bold text-white text-lg transition"
+              className="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-700 py-5 rounded-lg font-bold text-white text-xl transition"
             >
               {loading || uploading ? 'جاري الحفظ...' : car ? 'حفظ التعديلات' : 'إضافة السيارة'}
             </button>
-            <button type="button" onClick={onClose} className="w-full sm:w-auto bg-gray-800 hover:bg-gray-700 px-8 py-4 rounded-lg text-white font-bold text-lg transition">
+            <button type="button" onClick={onClose} className="w-full bg-gray-800 hover:bg-gray-700 py-5 rounded-lg text-white font-bold text-xl transition">
               إلغاء
             </button>
           </div>
@@ -256,7 +259,7 @@ export function CarForm({ car, onClose }: CarFormProps) {
   );
 }
 
-/* المكونات الصغيرة - نفس اللي عندك مع تحسين بسيط */
+/* المكونات الصغيرة - محسنة للموبايل */
 interface InputProps {
   label: string;
   value: string | number;
@@ -268,7 +271,7 @@ interface InputProps {
 function Input({ label, value, onChange, placeholder, isNumeric = false }: InputProps) {
   return (
     <div>
-      <label className="block text-gray-300 mb-2 font-bold text-lg">{label}</label>
+      <label className="block text-gray-300 mb-2 font-bold text-base sm:text-lg">{label}</label>
       <input
         type="text"
         value={value}
@@ -294,7 +297,7 @@ interface SelectProps {
 function Select({ label, value, onChange, options }: SelectProps) {
   return (
     <div>
-      <label className="block text-gray-300 mb-2 font-bold text-lg">{label}</label>
+      <label className="block text-gray-300 mb-2 font-bold text-base sm:text-lg">{label}</label>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -317,7 +320,7 @@ interface CheckboxProps {
 
 function Checkbox({ label, checked, onChange }: CheckboxProps) {
   return (
-    <label className="flex items-center gap-4 cursor-pointer select-none text-lg">
+    <label className="flex items-center gap-4 cursor-pointer select-none text-base sm:text-lg">
       <input
         type="checkbox"
         checked={checked}
