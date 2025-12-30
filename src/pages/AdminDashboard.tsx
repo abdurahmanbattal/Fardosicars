@@ -194,4 +194,35 @@ export function AdminDashboard() {
                           }
                           className="p-2 bg-gray-800 rounded-lg"
                         >
-                          <M
+                          <MoreVertical size={18} />
+                        </button>
+
+                        {openMenuId === car.id && (
+                          <div className="absolute left-0 mt-2 w-40 bg-black border border-gray-700 rounded-lg z-50">
+                            <button onClick={() => handleEdit(car)} className="menu-btn">تعديل</button>
+                            <button onClick={() => toggleVisibility(car)} className="menu-btn">
+                              {car.is_visible ? 'إخفاء' : 'إظهار'}
+                            </button>
+                            <button onClick={() => toggleFeatured(car)} className="menu-btn">
+                              مميزة
+                            </button>
+                            <button
+                              onClick={() => handleDelete(car.id)}
+                              className="menu-btn text-red-500"
+                            >
+                              حذف
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
